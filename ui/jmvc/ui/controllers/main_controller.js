@@ -46,6 +46,9 @@ $.Controller.extend('UI.Controllers.MainController',
     $("#background_app_tabs").tabs({'selected': 0});
     // init "app add overlay"
     this._init_get_more_apps_overlay();
+
+    // set up the SMART communication
+    SMART = new SMART_CONTAINER(SMART_HELPER);
   },
 
   _init_get_more_apps_overlay: function(){
@@ -80,7 +83,13 @@ $.Controller.extend('UI.Controllers.MainController',
               // Attach click handlers to each
               e.click(function(e){
                 $("a#get_more_apps").overlay().close();
-                _this.add_app({'pha': pha, 'fire_p': true});
+
+		debugger;
+
+		// SMART hook, but doesn't have to be SMART specific
+		pha.add_to_record(RecordController.RECORD_ID, function() {
+                    _this.add_app({'pha': pha, 'fire_p': true});
+		});
               })
 
               $('.wrap').append(e);
@@ -129,8 +138,13 @@ $.Controller.extend('UI.Controllers.MainController',
       
       var click_handler = function(){
         $('#app_content_iframe').attr('src', startURL); // load and show the iframe
-        $('#app_content').hide();
+	$('#app_content').hide();
         $('#app_content_iframe').show();
+
+	// is this a smart app?
+	if (pha.type == 'smart') {
+	    SMART.start_activity("main", pha.id);
+	}        
       };
       
       $('#active_app_tabs_inner li:last a').click(click_handler)

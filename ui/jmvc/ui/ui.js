@@ -18,8 +18,14 @@ steal
   "js/jquery.tools.sans.tabs.min",
   "js/xml2json",
   "js/ObjTree",
-  "js/utils"
+  "js/utils",
+  // for SMART
+  "js/class",
+  "js/jschannel",
+  "js/smart-api-container",
+  "js/smart-indivo-glue"
 )
+
 .models(
   'account',
   'record',

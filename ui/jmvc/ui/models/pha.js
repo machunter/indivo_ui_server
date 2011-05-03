@@ -11,7 +11,7 @@ $.Model.extend('UI.Models.PHA',
   single_callback: function(callback) {
     var ajax_callback = function(result) {
       var pha = result.App;
-      callback(new UI.Models.PHA({'id': pha['@id'], 'data': pha}));
+      callback(new UI.Models.PHA({'id': pha['@id'], 'data': pha, 'type': pha['@type']}));
     };
     return ajax_callback;
   },
@@ -29,7 +29,7 @@ $.Model.extend('UI.Models.PHA',
       // for consistency
       if (!(phas instanceof Array)) { phas = [phas]; }
       
-      var pha_objs = $(phas).map(function(i, pha) { return new UI.Models.PHA({'id': pha['@id'], 'data': pha}); });
+      var pha_objs = $(phas).map(function(i, pha) { return new UI.Models.PHA({'id': pha['@id'], 'data': pha, 'type': pha['@type']}); });
       callback(pha_objs);
     };
     return ajax_callback;

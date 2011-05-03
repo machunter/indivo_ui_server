@@ -84,8 +84,6 @@ $.Controller.extend('UI.Controllers.MainController',
               e.click(function(e){
                 $("a#get_more_apps").overlay().close();
 
-		debugger;
-
 		// SMART hook, but doesn't have to be SMART specific
 		pha.add_to_record(RecordController.RECORD_ID, function() {
                     _this.add_app({'pha': pha, 'fire_p': true});

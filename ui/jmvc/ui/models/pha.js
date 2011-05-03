@@ -71,4 +71,43 @@ $.Model.extend('UI.Models.PHA',
   data.framable
   data.ui
 */
-{})
+{
+    // These pertain mostly to SMART right now
+    add_to_record: function(record_id, callback) {
+	// FIXME: we'll want some kind of authorize screen first
+	if (this.type == "smart") {
+	    indivo_api_call("POST", "/smart/records/" + record_id + "/apps/"+ this.id + "/setup",
+			    null, function(result) {
+				callback();
+			    },
+			    function(error) {
+				alert('oy adding smart app');
+			    });
+	    
+	    return;
+	}
+
+	// if we haven't matched a type, just call the callback
+	callback();
+    },
+
+    remove_from_record: function(record_id, callback) {
+	// for now, smart only
+	// FIXME: we'll want some kind of authorize screen first
+	if (this.type == "smart") {
+	    indivo_api_call("POST", "/smart/records/" + record_id + "/apps/"+ this.id + "/remove",
+			    null, function(result) {
+				callback();
+			    },
+			    function(error) {
+				alert('oy removing smart app');
+			    });
+	    
+	    return;
+	}
+	
+	// if we haven't matched a type, just call the callback
+	callback();
+    }
+    
+})

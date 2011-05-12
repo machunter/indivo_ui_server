@@ -16,7 +16,7 @@ SMART_HELPER.handle_record_info = function(activity, callback) {
 	},
 	'record' : {
 	    'full_name' : current_record.label,
-	    'id' : current_record.record_id
+	    'id' : current_record.id
 	},
 	'credentials': {
 	    // for SMART REST, need to generate tokens and put them in here.
@@ -26,8 +26,8 @@ SMART_HELPER.handle_record_info = function(activity, callback) {
 
 SMART_HELPER.handle_api = function(activity, message, callback) {
     // should we do something different based on activity? Probably
-
-    if (api_call.method == "GET" && api_call.func == "/capabilities/") {
+    
+    if (message.method == "GET" && message.func == "/capabilities/") {
 	callback("<?xml version='1.0'?><rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'></rdf:RDF>");
     }
 

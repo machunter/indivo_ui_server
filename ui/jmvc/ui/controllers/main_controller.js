@@ -89,27 +89,22 @@ $.Controller.extend('UI.Controllers.MainController',
 			if(!m.read_at)
 				return m;
 		}).length;
-		// alter img src
-		var img = $('#inbox img');
-		if (img.is('*')) {
-			if(n_unread > 0 && n_unread < 10) {
-				img.attr('src', img.attr('src').match(/\/.*\//) + 'inbox_' + n_unread + '.png');
-			} else if(n_unread >= 10) {
-				img.attr('src', img.attr('src').match(/\/.*\//) + 'inbox_9_plus.png')
-			} else {
-				img.attr('src', img.attr('src').match(/\/.*\//) + 'inbox.png')
+		
+		// indicate unread count
+		if (n_unread > 0) {
+			var badge = $('#message_unread_count');
+			if (!badge.is('*')) {
+				badge = $('<div/>', {'id': 'message_unread_count'});
+				$('#message').append(badge);
 			}
+			badge.text(n_unread);
 		}
-
-		// alert link text
-		var a = $('#inbox_li a');
-		if(n_unread > 0) {
-			a.text('Inbox (' + n_unread + ')')
-		} else {
-			a.text('Inbox')
+		
+		// no unread messages
+		else {
+			$('#message_unread_count').fadeOut('fast', function() { $(this).remove(); });
 		}
-
-		a.prepend(img)
+		
 		if (success) {
 			success();
 		}

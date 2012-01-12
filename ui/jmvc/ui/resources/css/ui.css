@@ -290,12 +290,11 @@ blockquote.content { margin: 1em 0; }
 #header {
 	min-width: 976px !important; /* see #app_container */
 	height: 80px;
-	margin-bottom: 16px;
 }
 
 #header_controls {
 	float: right; height: 28px;
-	margin: -16px 3px 0px 0px;	/* -3px = 1px left border of app-selector + 2* 1px border op app-content */
+	margin: -16px 0 0 0;
 	padding: 8px 12px 0 12px;
 	text-transform: uppercase;
 	font-size: 0.86em;
@@ -390,17 +389,16 @@ blockquote.content { margin: 1em 0; }
 
 #tabs {
 	position: relative;
-	height: 32px; margin-left: 17%; padding-left: 16px;
+	height: 32px; margin-left: 17%; padding: 10px 0 0 16px;
 	overflow: hidden;
 }
 
 #record_tabs {
-	position: relative; top: 0; right: 16px; height: 32px;
-	overflow: hidden;
+	margin-right: 16px;
 }
 
 .main_tab, .record_tab {
-	float: left; display: block;
+	float: left; display: block; position: relative;
 	height: 22px; margin: 4px 0 0 8px; padding: 1px 12px 3px;
 	text-align: center;
 	border: 1px solid rgb(193,193,193); border-bottom-color: rgb(204,204,204);
@@ -424,6 +422,22 @@ blockquote.content { margin: 1em 0; }
 }
 .record_tab {
 	float: right;
+}
+
+.main_tab img {
+	width: 16px; height: 16px;
+	margin: 0 0.25em 0 -4px;
+	vertical-align: -10%;
+}
+
+#message_unread_count {
+	position: absolute; top: -7px; right: -7px;
+	min-width: 10px; height: 20px;
+	padding: 0 5px;
+	color: white; font-size: 15px; font-weight: bold; line-height: 20px;
+	-moz-border-radius: 10px; -webkit-border-radius: 10px; border-radius: 10px;
+	background-color: rgb(200,0,0);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.4); -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.4); box-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
 #tabs .selected {

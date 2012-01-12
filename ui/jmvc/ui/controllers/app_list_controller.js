@@ -33,20 +33,21 @@ $.Controller.extend('UI.Controllers.AppList',
 		// animate tab to new selection TODO: do we want to revert on failure?
 		this.selectTab(el);
 		
+		// load
+		var ui_main = $('body').controllers("main")[0];
+		if (!ui_main) {
+			console.error("There is no main controller on body");
+			return;
+		}
+		
 		switch (type) {
 			case "internal":
-				// clear out old controllers and attach new one
-				this.clearControllers($('#app_content'));
-				$("#app_content").html("")["ui_" + controller]({account:this.account}).show();
-				$('#app_content_iframe').hide();
+				ui_main.cleanAndShowAppDiv();
+				$("#app_content")["ui_" + controller]({account:this.account}).show();
 				break;
 			case "external": 
 				var url = el.attr("data-url");
-				$("#app_content").html("Loading...").show();			/// @todo show a nice loading screen
-				$('#app_content_iframe').hide().attr("src", url).load(function(){
-					$(this).show();
-					$("#app_content").hide();
-				});
+				ui_main.loadURLInAppIFrame(url);
 				break;
 			case "background":
 				alert("background not supported yet");
@@ -70,15 +71,7 @@ $.Controller.extend('UI.Controllers.AppList',
 	 * NOTE: Healthfeed, Inbox, "Get More Apps", and "Sharing" are not
 	 * added using this method since they are not true apps.
 	 *
-	 * app with no ui go into a spot below the normal apps and above "sharing" and "get more apps"
-	 *
-	 * @codestart html
-	 * <div id="background_apps_list" style="text-align: center; margin: 0px 0;">
-	 *   <span style="color: #aaa; font-size: 0.85em">&bull;</span>
-	 * </div>
-	 * <div>this is a bg app</div>
-	 * <div>this is another bg app</div>
-	 * @codeend
+	 * App with no ui go into a spot below the normal apps and above "Sharing" and "App Settings"
 	 */
 	"{enabledApps} add": function(list, ev, newApps) {
 		var activeRecord = this.account.attr("activeRecord");
@@ -90,15 +83,16 @@ $.Controller.extend('UI.Controllers.AppList',
 						'record_id': activeRecord.carenet_id ? '' : activeRecord.id,
 						'carenet_id': activeRecord.carenet_id || ''
 					});
-					$('#active_app_tabs').append($.View("//ui/views/pha/app_tab", {isBackgroundApp:false, app:app, startURL:startURL}));
+					$('#ui_app_tabs').append($.View("//ui/views/pha/app_tab", {isBackgroundApp:false, app:app, startURL:startURL}));
 				}
-		
+				
 				// background app
 				else {
 					$('#background_app_tabs').append($.View("//ui/views/pha/app_tab", {isBackgroundApp:true, app:app}));
 				}
 			});
 		}
+		this.updateAppSelectorVisibility();
 	},
 	
 	/*
@@ -107,6 +101,28 @@ $.Controller.extend('UI.Controllers.AppList',
 	 */
 	"{enabledApps} remove": function(list, ev, removedApps) {
 		removedApps.elements(this.element).remove();
+		this.updateAppSelectorVisibility();
+	},
+	
+	/*
+	 *	Shows and hides the app selector areas according to their content
+	 */
+	updateAppSelectorVisibility: function() {
+		var ui_app_sel = $('#ui_app_tabs');
+		if (ui_app_sel.children().length > 0) {
+			ui_app_sel.show();
+		}
+		else {
+			ui_app_sel.hide();
+		}
+		
+		var bg_app_sel = $('#background_app_tabs');
+		if (bg_app_sel.children().length > 0) {
+			bg_app_sel.show();
+		}
+		else {
+			bg_app_sel.hide();
+		}
 	},
 	
 	/*
@@ -118,7 +134,7 @@ $.Controller.extend('UI.Controllers.AppList',
 		// load record's apps
 		if (attr === "activeRecord") {
 			if (newVal) {
-				UI.Controllers.MainController.unlockAppSelector();
+				$('body').controllers('main')[0].unlockAppSelector();
 				var record = newVal;
 				// is this a carenet or a record? depending on which, init the appropriate apps
 				if (record.carenet_id) {
@@ -128,9 +144,10 @@ $.Controller.extend('UI.Controllers.AppList',
 				}
 			}
 			
-			// if we got no record, e.g. to show the new-record form
+			// we got no record (e.g. showing the create-record form)
 			else {
-				UI.Controllers.MainController.lockAppSelector();
+				$('body').controllers('main')[0].lockAppSelector();
+				this.selectTab(null);
 				this.set_enabled_apps([]);
 			}
 		}
@@ -157,31 +174,24 @@ $.Controller.extend('UI.Controllers.AppList',
 		
 		// TODO: is keeping track of previously selected app something we really want to do?
 		// Yes, otherwise switching a record will always throw you to the healthfeed, which I think is not desireable (pp)
-		// ...and try to re-select previous app, show healthfeed otherwise
+		// ...and try to re-select previous app, show record info otherwise
 		if (this.account.activeRecord) {
 			var old_app = $('#' + selected_id);
 			if (old_app.is('*')) {
-				console.log(1);
+				var type = old_app.attr("data-appType");
+				var controller = old_app.attr("data-controller");
+				console.log(old_app);
 				old_app.click();
 			}
 			else {
-				$('#healthfeed_li').click();
+				$('body').controllers('main')[0].displayDefaultPage();
 			}
 		}
 	},
 	
-	/*
-	 * Clear out any previous Controllers that have been attached to given element
-	 * @param {Object} el element to remove Controllers from
-	 */
-	clearControllers: function(el) {
-		$.each($(el).controllers(), function(i, val) {
-			val.destroy();
-		});
-	},
 
 	/**
-	 * Simple tab functionality
+	 * Simple App tab functionality
 	 */
 	selectTab: function(el) {
 		var selector = this.element,

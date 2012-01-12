@@ -4,7 +4,7 @@ Views for Indivo JS UI
 """
 # pylint: disable=W0311, C0301
 # fixme: rm unused imports
-from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, HttpResponseForbidden, Http404, HttpRequest
+from django.http import HttpResponse, HttpResponseRedirect, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseServerError, Http404, HttpRequest
 from django.contrib.auth.models import User
 from django.core.exceptions import *
 from django.core.urlresolvers import reverse
@@ -88,9 +88,7 @@ def index(request):
                 fullname = e.findtext('fullName')
                 return utils.render_template('ui/index', { 'ACCOUNT_ID': account_id,
                                                              'FULLNAME': fullname,
-                                                 'ALLOW_ADDING_RECORDS': settings.ALLOW_ADDING_RECORDS,
-                                                   'HIDE_GET_MORE_APPS': settings.HIDE_GET_MORE_APPS,
-                                                         'HIDE_SHARING': settings.HIDE_SHARING })
+                                                             'SETTINGS': settings })
             # error
             return_url = request.session.get('return_url', '/')
             err_msg = res.response.get('response_data', '500: Unknown Error')
@@ -832,10 +830,9 @@ def indivo_api_call_get(request):
     else:
         data = {}
     
-        
     resp = api.call(request.method, request.path[10:], options= {'data': data})
     if resp == False:
-        return HttpResponseServerError
+        return HttpResponseServerError()
     else:
         return HttpResponse(resp, mimetype="application/xml")
 

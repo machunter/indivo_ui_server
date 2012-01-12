@@ -44,39 +44,52 @@
 		<!-- container for alert messages -->
 		<div id="alerts"></div>
 		
-		<div id="record_tabs">
-			{% if ALLOW_ADDING_RECORDS %}
-			<a id="add_record_tab" class="record_tab" href="javascript:void(0);"><img src="/jmvc/ui/resources/images/add_11.png" alt="+" /></a>
-			{% endif %}
-		</div>
+		<div id="main_container">
 		
-		<div id="app_container">
-			<div id="app_selector">
-				<ul id="active_app_tabs">
-					<li id="healthfeed_li" data-controller="healthfeed" data-appType="internal">
-						<img class="app_tab_img" height="32px" width="32px" src="/jmvc/ui/resources/images/app_icons_32/healthfeed.png" alt="" />{% trans "Healthfeed" %}
-					</li>
-					<li id="inbox_li" data-controller="message" data-appType="internal">
-						<img class="app_tab_img" height="32px" width="32px" src="/jmvc/ui/resources/images/app_icons_32/inbox.png" alt="" />{% trans "Inbox" %}
-					</li>
-				</ul>
+			<!-- the tab bar -->
+			<div id="tabs">
+				{% if not SETTINGS.HIDE_HEALTHFEED %}
+				<a id="healthfeed" class="main_tab" href="javascript:void(0);">
+					<!--img class="app_tab_img" height="32px" width="32px" src="/jmvc/ui/resources/images/app_icons_32/healthfeed.png" alt="" /-->
+					{% trans "Healthfeed" %}
+				</a>
+				{% endif %}
+				{% if not SETTINGS.HIDE_INBOX %}
+				<a id="message" class="main_tab" href="javascript:void(0);">
+					<!--img class="app_tab_img" height="32px" width="32px" src="/jmvc/ui/resources/images/app_icons_32/inbox.png" alt="" /-->
+					{% trans "Inbox" %}
+				</a>
+				{% endif %}
 				
-				<ul id="background_app_tabs" style="display: none"></ul>
+				<div id="record_tabs">
+					{% if SETTINGS.ALLOW_ADDING_RECORDS %}
+					<a id="add_record_tab" class="record_tab" href="javascript:void(0);"><img src="/jmvc/ui/resources/images/add_11.png" alt="+" /></a>
+					{% endif %}
+				</div>
+			</div>
+			
+			<!-- the app selector -->
+			<div id="app_selector">
+				<ul id="ui_app_tabs" style="display: none;"></ul>
+				<ul id="background_app_tabs" style="display: none;"></ul>
 				
 				<ul id="record_owned_options">
-				{% if not HIDE_SHARING %}
+					{% if not SETTINGS.HIDE_SHARING %}
 					<li id="carenet" data-controller="carenet" data-appType="internal">
 						<img class="app_tab_img_small" src="/jmvc/ui/resources/images/icons_24/groupevent.png" alt="" />{% trans "Sharing" %}
 					</li>
-				{% endif %}
+					{% endif %}
 					<li id="pha" data-controller="pha" data-appType="internal">
 						<img class="app_tab_img_small" src="/jmvc/ui/resources/images/icons_24/settings.png" alt="" />{% trans "App Settings" %}
 					</li>
 				</ul>
 			</div>
 			
-			<div id="app_content" class="app_content_pane"></div>
-			<iframe id="app_content_iframe" class="app_content_pane" src="" style="display: none" frameBorder="no"></iframe>
+			<!-- main app content -->
+			<div id="app_container">
+				<div id="app_content" class="app_content_pane"></div>
+				<iframe id="app_content_iframe" class="app_content_pane" src="" style="display: none" frameBorder="no"></iframe>
+			</div>
 		</div>
 		
 		<!-- used for jquery tools overlay -->

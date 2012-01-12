@@ -287,14 +287,15 @@ blockquote.content { margin: 1em 0; }
 }
 
 /*** Header ***/
-#header { 
-	width: 99%; /* app-selector's 17% + app-content's 79% width + 2* 1.5% horizontal padding */ height: 80px; /* 16px * 5 */
+#header {
+	min-width: 976px !important; /* see #app_container */
+	height: 80px;
 	margin-bottom: 16px;
 }
 
 #header_controls {
 	float: right; height: 28px;
-	margin: -16px -3px 0px 0px;	/* -3px = 1px left border of app-selector + 2* 1px border op app-content */
+	margin: -16px 3px 0px 0px;	/* -3px = 1px left border of app-selector + 2* 1px border op app-content */
 	padding: 8px 12px 0 12px;
 	text-transform: uppercase;
 	font-size: 0.86em;
@@ -378,11 +379,90 @@ blockquote.content { margin: 1em 0; }
 #copyright { color: #999; font-size: 0.8em; }
 
 
-/*** App Selector ***/
+/*** App + Tab Area Container ***/
+
+#main_container {
+	min-width: 970px !important; /* 1024 - 16 (vert scrollbar) - 2* 16 (body margin) - 2* 3 (self padding) */
+}
+
+
+/*** Tabs ***/
+
+#tabs {
+	position: relative;
+	height: 32px; margin-left: 17%; padding-left: 16px;
+	overflow: hidden;
+}
+
+#record_tabs {
+	position: relative; top: 0; right: 16px; height: 32px;
+	overflow: hidden;
+}
+
+.main_tab, .record_tab {
+	float: left; display: block;
+	height: 22px; margin: 4px 0 0 8px; padding: 1px 12px 3px;
+	text-align: center;
+	border: 1px solid rgb(193,193,193); border-bottom-color: rgb(204,204,204);
+	-moz-border-radius: 5px 5px 0 0; -webkit-border-radius: 5px 5px 0 0; border-radius: 5px 5px 0 0;
+	background-color: rgba(255,255,255,0.75);
+	/* background-color will be overridden for record_tab in JS, but we still want to fake the lower shadow for inactive tabs, here we go: */
+    background-image:-webkit-linear-gradient(bottom, rgba(0,0,0,0.04), rgba(0,0,0,0) 3px);
+    background-image:-moz-linear-gradient(bottom, rgba(0,0,0,0.04), rgba(0,0,0,0) 3px);
+	-webkit-transition-property: none;	/* the animation in Safari and Chrome does not go as smoothly as in Firefox, let's disable it for now */
+	-moz-transition-property: margin-top, padding;
+	-o-transition-property: margin-top, padding;
+	transition-property: margin-top, padding;
+	-webkit-transition-duration: 0.1s; -o-transition-duration: 0.1s; -moz-transition-duration: 0.1s; transition-duration: 0.1s;
+}
+.main_tab:hover, .record_tab:hover {
+	margin-top: 0; padding-bottom: 7px;
+	border-bottom: 1px solid rgb(204,204,204); color: #212121;
+}
+.main_tab:first-child {
+	margin-left: 0;
+}
+.record_tab {
+	float: right;
+}
+
+#tabs .selected {
+	margin-top: 0; padding: 5px 12px 3px;
+	font-weight: bold;
+	border-bottom-color: transparent;
+	background: rgb(250,250,250);
+	-moz-box-shadow: 0 1px 3px #ccc; -webkit-box-shadow: 0 1px 3px #ccc; box-shadow: 0 1px 3px #ccc;
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.2); -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+#add_record_tab img {
+	vertical-align: -6%;
+}
+#add_record_tab.selected {
+	background-color: rgb(250,250,250);
+}
+
+
+
+/*** App Container and - Selector ***/
+
+#app_container {
+	min-height: 600px;
+	margin: -1px 0 0 17%; padding: 16px;
+	border: 1px solid #ccc;
+	-moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;
+	background: rgb(250,250,250);
+	-moz-box-shadow: 0px 1px 3px #aaa; -webkit-box-shadow: 0px 1px 3px #aaa; box-shadow: 0px 1px 3px #aaa;
+	-moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.2); -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.2); box-shadow: 0px 1px 3px rgba(0,0,0,0.2);
+}
+
+.app_content_pane {
+	width: 100%; min-height: 600px;
+}
 
 #app_selector {
 	float: left; position: relative; width: 17%;
-	margin-top: 48px; padding: 7px 0;
+	margin: 48px 0 0 -1px; padding: 7px 0;
 	border: 1px dashed #ccc; border-right: none;
 	-moz-border-radius: 5px 0 0 5px; -webkit-border-radius: 5px 0 0 5px; border-radius: 5px 0 0 5px;
 	-moz-box-shadow: 0 0px 0 #fff; -webkit-box-shadow: 0 0px 0 #fff; box-shadow: 0 0px 0 #fff;
@@ -408,84 +488,24 @@ blockquote.content { margin: 1em 0; }
 }
 
 #app_selector_cover {
-	position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-	background-color: rgb(254,254,253); background-color: rgba(255,255,255,0.8);
+	position: absolute; top: 0; left: 0; right: 5px; bottom: 0;
+	background-color: rgb(254,252,247); background-color: rgba(254,252,247,0.8);
 }
 
 .app_tab_img { margin: 0 10px -7px 0; }
 .app_tab_img_small { margin: 0 10px -7px 0; padding: 2px 4px; }
 
+#ui_app_tabs {
+	margin-bottom: 1em;
+}
 #background_app_tabs {
-	margin-top: 2em;
+	margin-bottom: 1em;
 }
 #record_owned_options {
-  margin-top: 1em;
-  color: inherit !important;
 }
 
 
-#app_container {
-	width: 100%; min-width: 992px !important; /* 1024 - 16 (browser chrome) - 8 * 2 (body margin) */
-	padding: 5px 0;
-	-moz-box-shadow: none; -webkit-box-shadow: none; box-shadow: none;
-	overflow: hidden;
-}
 
-.app_content_pane {
-	float: left; width: 79%; min-height: 600px; min-width: 768px; /* not including padding, borders or margin. 768 + (15 * 2 (padding)) + (1 * 2) (border) = 800px total width*/
-	padding: 15px 1.5%;
-	border: 1px solid #ccc;
-	-moz-border-radius: 5px; -webkit-border-radius: 5px; border-radius: 5px;
-	background: #fafafa;
-	-moz-box-shadow: 0px 1px 3px #aaa; -webkit-box-shadow: 0px 1px 3px #aaa; box-shadow: 0px 1px 3px #aaa;
-	-moz-box-shadow: 0px 1px 3px rgba(0,0,0,0.2); -webkit-box-shadow: 0px 1px 3px rgba(0,0,0,0.2); box-shadow: 0px 1px 3px rgba(0,0,0,0.2);
-}
-
-
-/*** record tabs ***/
-
-#record_tabs {
-	float: right; position: relative; height: 32px;
-	margin: 0 22px -6px 0; padding: 2px 5px 0;
-	overflow: hidden;
-}
-#add_record_tab img {
-	vertical-align: -6%;
-}
-#add_record_tab.selected {
-	background-color: rgb(250,250,250);
-}
-
-.record_tab {
-	float: right; display: block;
-	height: 22px; margin: 4px 0 0 12px; padding: 1px 12px 3px;
-	text-align: center;
-	border: 1px solid rgb(193,193,193); border-bottom-color: rgb(204,204,204);
-	-moz-border-radius: 5px 5px 0 0; -webkit-border-radius: 5px 5px 0 0; border-radius: 5px 5px 0 0;
-	/* background-color will be set in JS, but we still want to fake the lower shadow for inactive tabs, here we go: */
-    background-image:-webkit-linear-gradient(bottom, rgba(0,0,0,0.04), rgba(0,0,0,0) 3px);
-    background-image:-moz-linear-gradient(bottom, rgba(0,0,0,0.04), rgba(0,0,0,0) 3px);
-	-webkit-transition-property: none;	/* the animation in Safari and Chrome does not go as smoothly as in Firefox, let's disable it for now */
-	-moz-transition-property: margin-top, padding;
-	-o-transition-property: margin-top, padding;
-	transition-property: margin-top, padding;
-	-webkit-transition-duration: 0.1s; -o-transition-duration: 0.1s; -moz-transition-duration: 0.1s; transition-duration: 0.1s;
-}
-.record_tab:hover {
-	margin-top: 0; padding-bottom: 7px;
-	border-bottom: 1px solid rgb(204,204,204); color: #212121;
-}
-#record_tabs .selected {
-	margin-top: 0; padding: 5px 12px 3px;
-	font-weight: bold;
-	border-bottom-color: transparent;
-	background-image: none;
-	-moz-box-shadow: 0 1px 3px #ccc; -webkit-box-shadow: 0 1px 3px #ccc; box-shadow: 0 1px 3px #ccc;
-	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.2); -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.2); box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-}
-
-/* this hides the jquery ui tabs generated panels */
-#record_tabs div { display: none; }
 
 #no_record_hint {
 	position: relative; padding: 3em;

@@ -133,6 +133,10 @@ $.Controller.extend('UI.Controllers.MainController',
 			}
 		});
 		
+		// start into healthfeed or inbox
+		var launch_app = $('#healthfeed').is('*') ? $('#healthfeed') : $('#message');
+		launch_app.click();
+		
 		// setup periodic new message check 
 		(function inboxUpdater(){
 			if(self.messageCheck) {
@@ -249,16 +253,11 @@ $.Controller.extend('UI.Controllers.MainController',
 	
 	
 	/**
-	 *	Enabling/Disabling the App selector
+	 *	Show hint on how to add a record.
+	 *	@todo Currently not being used as we start into Healthfeed. We could add a hint to the records tabbar if we have no records instead. [pp]
 	 */
-	lockAppSelector: function() {
-		$('#record_owned_options').append('<div id="app_selector_cover"> </div>');
-	},
-	unlockAppSelector: function() {
-		$('#app_selector_cover').remove();
-	},
 	showNoRecordsHint: function() {
-		this.lockAppSelector();
+		$("#app_selector").controller().lock();
 		$('#app_content_iframe').attr('src', 'about:blank').hide();
 		
 		// this will also be shown if adding records has been disabled, but signing up from the site automatically creates the first record,

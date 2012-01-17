@@ -34,21 +34,19 @@ $.Controller.extend('UI.Controllers.Record',
 			}
 			
 			// load the desired or first record
-			if (records.length > 0) {
-				$('body').controllers('main')[0].unlockAppSelector();
+			if (records.length > 0 && load_record) {
 				var record_to_load = records[0];
-				if (load_record) {
-					for (var i = 0; i < records.length; i++) {
-						if (records[i].id == load_record) {
-							record_to_load = records[i];
-							break;
-						}
+				for (var i = 0; i < records.length; i++) {
+					if (records[i].id == load_record) {
+						record_to_load = records[i];
+						break;
 					}
 				}
+				
 				self.loadRecord(record_to_load);
 			}
-			else {
-				$('body').controllers('main')[0].showNoRecordsHint();
+			else if (records.length < 1) {
+			//	$('body').controllers('main')[0].showNoRecordsHint();
 			}
 		},
 		function() {

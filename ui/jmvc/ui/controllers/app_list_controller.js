@@ -134,7 +134,6 @@ $.Controller.extend('UI.Controllers.AppList',
 		// load record's apps
 		if (attr === "activeRecord") {
 			if (newVal) {
-				$('body').controllers('main')[0].unlockAppSelector();
 				var record = newVal;
 				// is this a carenet or a record? depending on which, init the appropriate apps
 				if (record.carenet_id) {
@@ -146,7 +145,6 @@ $.Controller.extend('UI.Controllers.AppList',
 			
 			// we got no record (e.g. showing the create-record form)
 			else {
-				$('body').controllers('main')[0].lockAppSelector();
 				this.selectTab(null);
 				this.set_enabled_apps([]);
 			}
@@ -171,6 +169,14 @@ $.Controller.extend('UI.Controllers.AppList',
 		$.each(apps, function(index, value){
 			enabledList.push(value);
 		});
+		
+		// lock/unlock the app selector
+		if (this.account.activeRecord) {
+			this.unlock();
+		}
+		else {
+			this.lock();
+		}
 		
 		// TODO: is keeping track of previously selected app something we really want to do?
 		// Yes, otherwise switching a record will always throw you to the healthfeed, which I think is not desireable (pp)
@@ -236,6 +242,50 @@ $.Controller.extend('UI.Controllers.AppList',
 		// set background color on newly selected tab
 		if (el) {
 			el.addClass('selected').css('background-color', bgcolor);
+		}
+	},
+	
+	
+	/**
+	 *	Locks the app selector, and if it's completely empty hides it alltogether
+	 */
+	lock: function() {
+		var num_apps = $('#app_selector ul li').length;
+		if (num_apps < 1) {
+			this.hideAppSelectionInterface();
+		}
+		else if (!$('#app_selector_cover').is('*')) {
+			$('#record_owned_options').append('<div id="app_selector_cover"> </div>');
+		}
+	},
+	
+	/**
+	 *	Unlocks/shows the app selector if there is anything to be shown
+	 */
+	unlock: function() {
+		var num_apps = $('#app_selector ul li').length;
+		if (num_apps > 0) {
+			this.showAppSelectionInterface();
+			$('#app_selector_cover').remove();
+		}
+		else {
+			this.hideAppSelectionInterface();
+		}
+	},
+	
+	showAppSelectionInterface: function() {
+		if (this.element.is(':hidden')) {
+			this.element.show();
+			$('#tabs').css('margin-left', '17%');
+			$('#app_container').css('margin-left', '17%');
+		}
+	},
+	
+	hideAppSelectionInterface: function() {
+		if (this.element.is(':visible')) {
+			this.element.hide();
+			$('#tabs').css('margin-left', 0);
+			$('#app_container').css('margin-left', 0);
 		}
 	}
 });

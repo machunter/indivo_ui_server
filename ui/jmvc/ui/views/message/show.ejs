@@ -1,6 +1,18 @@
 {% load i18n %}
 <h2>{% trans "Inbox" %}</h2>
-
+<div>Displaying messages for: 
+	<% for (var i=0; i<labels.length; i++) {%>
+		<% if (i === (labels.length -1)) { %>
+			and <%= labels[i] %>
+		<% } else { %>
+			<% if (labels.length === 2) { %>
+				<%= labels[i] %>
+			<% } else { %> 
+				<%= labels[i] %>,
+			<% } %>
+		<% } %>
+	<% } %>
+</div>
 <% if (messages.length == 0) { %>
 
   <em>{% trans "no messages" %}</em>

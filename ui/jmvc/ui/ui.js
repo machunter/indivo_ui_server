@@ -59,7 +59,8 @@ steal(
 				if (account && account.id) {
 					// init controllers once Account is loaded
 					$("#app_selector").ui_app_list({account:account, enabledApps:UI.ENABLED_APPS});
-					$("body").ui_record({account:account, alertQueue:UI.ALERT_QUEUE});
+					// disable record tabs for now
+					//$("body").ui_record({account:account, alertQueue:UI.ALERT_QUEUE});
 					$("body").ui_main({account:account, alertQueue:UI.ALERT_QUEUE});
 				}
 				else {

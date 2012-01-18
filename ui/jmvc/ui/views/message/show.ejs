@@ -1,16 +1,11 @@
 {% load i18n %}
 <h2>{% trans "Inbox" %}</h2>
 <div>Displaying messages for: 
-	<% for (var i=0; i<labels.length; i++) {%>
-		<% if (i === (labels.length -1)) { %>
-			and <%= labels[i] %>
-		<% } else { %>
-			<% if (labels.length === 2) { %>
-				<%= labels[i] %>
-			<% } else { %> 
-				<%= labels[i] %>,
-			<% } %>
-		<% } %>
+	<% if (labels.length <=2) { %>
+		<%= labels.join(' and ') %>
+	<% } else { %>
+		<% var lastLabel = labels.pop() %> 
+		<%= labels.join(', ') %> and <%= lastLabel %>
 	<% } %>
 </div>
 <% if (messages.length == 0) { %>

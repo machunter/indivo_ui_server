@@ -26,7 +26,7 @@ p { margin: 0; }
 	width: 65%; font-size: 20px;
 }
 .table_form input[type="text"] { width: 98%; }
-.table_form button[type="submit"] { min-width: 34%; font-size: 18px; margin-bottom: 10px; }
+.table_form button { min-width: 34%; font-size: 18px; margin-bottom: 10px; }
 
 .row { display: table-row; }
 a.row { display: block; font-size: 1.2em; }

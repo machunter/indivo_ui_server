@@ -83,15 +83,20 @@ def index(request):
         
         # got account info from the server
         if res and res.response:
-            if 200 == res.response.get('response_status', 0):
+            status = res.response.get('response_status', 0)
+            if 200 == status:
                 e = ET.fromstring(res.response.get('response_data', '<xml/>'))
                 fullname = e.findtext('fullName')
                 return utils.render_template('ui/index', { 'ACCOUNT_ID': account_id,
                                                              'FULLNAME': fullname,
                                                              'SETTINGS': settings })
-            # error
-            return_url = request.session.get('return_url', '/')
+           	
+            # 404 and 403 errors here mostly happen on expired tokens or deleted accounts. Redirect to login to clear the tokens
+            if 403 == status or 404 == status:
+                return HttpResponseRedirect(reverse(login))
+            
             err_msg = res.response.get('response_data', '500: Unknown Error')
+            return_url = request.session.get('return_url', '/')
             return utils.render_template(LOGIN_PAGE, {'ERROR': ErrorStr(err_msg), 'RETURN_URL': return_url, 'SETTINGS': settings})
     
     return HttpResponseRedirect(reverse(login))
@@ -329,6 +334,7 @@ def account_init(request, account_id, primary_secret):
     has_primary_secret = (len(primary_secret) > 0)      # TODO: Get this information from the server (API missing as of now)
     secondary_secret = ''
     has_secondary_secret = (None != account.get('secret') and len(account.get('secret')) > 0)
+    can_autocreate_record = True if 'uninitialized' == account_state else False     # TODO: Better: check whether the account has no records
     
     # if the account is already active, show login IF at least one auth-system is attached
     if 'uninitialized' != account_state:
@@ -368,7 +374,7 @@ def account_init(request, account_id, primary_secret):
         
         # on success also create the first record if we have a full_name and is enabled in settings
         if 200 == status:
-            if settings.REGISTRATION['autocreate_record'] and account['fullName'] and len(account['fullName']) > 0:
+            if can_autocreate_record and settings.REGISTRATION['autocreate_record'] and account.has_key('fullName') and len(account['fullName']) > 0:
                 res = _record_create(account_id, {'fullName': account['fullName'], 'email': account_id})
                 if 200 != res.status_code:
                     utils.log("account_init(): Error creating a record after initializing the account, failing silently. The error was: %s" % res.content)
@@ -490,16 +496,25 @@ def forgot_password(request):
     
     if request.method == HTTP_METHOD_POST:
         email = request.POST.get('account_id')
+        api = get_api()
         
-        api = IndivoClient(settings.CONSUMER_KEY, settings.CONSUMER_SECRET, settings.INDIVO_SERVER_LOCATION)
-        # get account id from email (which we are assuming is contact email)
+        # get account status
         res = api.account_forgot_password(account_id=email).response
         status = res.get('response_status', 0)
         
-        # password was reset, show secondary secret
+        # password was reset, show secondary secret if needed
         if 200 == status:
-            e = ET.fromstring(res.get('response_data', '<root/>'))
-            params['SECONDARY_SECRET'] = e.text
+            params['EMAIL_SENT'] = True
+            if settings.PASSWORD_RESET_REQUIRE_SECONDARY:
+                e = ET.fromstring(res.get('response_data', '<root/>'))
+                if not e.text or 'None' == e.text:
+                    utils.log('Password reset requires a secondary secret, but this account currently does not have one!')
+                    # TODO: Tell the server to generate a secondary secret!
+                    # If you arrive here, account generation was not setup properly because it should have created a secondary secret
+                    # We return an arbitrary secondary secret as the server will accept any secondary secret in this case
+                    e.text = 290385
+                
+                params['SECONDARY_SECRET'] = e.text
         
         # error resetting, try to find out why
         else:
@@ -510,7 +525,7 @@ def forgot_password(request):
             params['ACCOUNT_ID'] = email
             if 'Account has not been initialized' == res.get('response_data'):
                 params['UNINITIALIZED'] = True
-            
+    
     return utils.render_template('ui/forgot_password', params)
 
 
@@ -521,17 +536,20 @@ def reset_password(request, account_id, primary_secret):
     params = {'ACCOUNT_ID': account_id, 'PRIMARY_SECRET': primary_secret, 'SETTINGS': settings}
     
     if HTTP_METHOD_POST == request.method:
-        secondary_secret = request.POST.get('conf1') + request.POST.get('conf2')
+        secondary_secret = request.POST.get('conf1', '') + request.POST.get('conf2', '')
+        check_params = {}
+        if settings.PASSWORD_RESET_REQUIRE_SECONDARY:
+            check_params = { 'secondary_secret': secondary_secret }
         
         # check the validity of the primary and secondary secrets
-        api = IndivoClient(settings.CONSUMER_KEY, settings.CONSUMER_SECRET, settings.INDIVO_SERVER_LOCATION)
-        ret = api.check_account_secrets(account_id=account_id, primary_secret=primary_secret, parameters={
-            'secondary_secret': secondary_secret
-        })
+        api = get_api()
+        ret = api.check_account_secrets(account_id=account_id, primary_secret=primary_secret, parameters=check_params)
+        status = ret.response.get('response_status', 0)
         
         # secrets are valid, set the new password:
-        if 200 == ret.response.get('response_status', 0):
-            params['SECONDARY_SECRET'] = secondary_secret
+        if 200 == status:
+            if settings.PASSWORD_RESET_REQUIRE_SECONDARY:
+                params['SECONDARY_SECRET'] = secondary_secret
             
             # get account info
             ret = api.account_info(account_id = account_id)
@@ -546,13 +564,19 @@ def reset_password(request, account_id, primary_secret):
                     
                     # password was reset, log the user in
                     if 200 == ret.response.get('response_status', 0):
+                        
+                        # scramble the primary secret
+                        api.call('PUT', '/accounts/%s/primary-secret' % account_id)
+                        
+                        # log the user in
                         try:
-                            try:
-                                username = account['auth_systems'][0]['username']      # TODO: I don't like this...
-                                tokens_get_from_server(request, username, pw1)
-                            except Exception as e:
-                                params['ERROR'] = ErrorStr(str(e))                     # We'll never see this
+                            username = account['auth_systems'][0]['username']      # I don't like this construct...
+                            tokens_get_from_server(request, username, pw1)
+                            
                             return HttpResponseRedirect(reverse(index))
+                        
+                        except Exception as e:
+                            params['ERROR'] = ErrorStr(str(e))
                         except IOError as e:
                             params['ERROR'] = ErrorStr(e.strerror)
                     else:
@@ -563,6 +587,11 @@ def reset_password(request, account_id, primary_secret):
                 params['ERROR'] = ErrorStr('Password too short')
         
         # wrong secrets (primary or secondary)
+        elif 403 == status:
+            if settings.PASSWORD_RESET_REQUIRE_SECONDARY:
+                params['ERROR'] = ErrorStr('Wrong confirmation code')
+            else:
+                params['ERROR'] = ErrorStr('Wrong secret')
         else:
             params['ERROR'] = ErrorStr(ret.response.get('response_data') or 'Wrong confirmation code')
     

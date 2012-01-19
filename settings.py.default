@@ -43,6 +43,9 @@ REGISTRATION = {
 # allow user to add records?
 ALLOW_ADDING_RECORDS = False
 
+# handling of user secrets
+PASSWORD_RESET_REQUIRE_SECONDARY = True
+
 #  quick and dirty private labeling (optional)
 # BRANDING = {
 #   'short_name': 'gpp',

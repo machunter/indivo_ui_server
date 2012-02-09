@@ -21,6 +21,10 @@ $.Controller.extend('UI.Controllers.Record',
 		this.loadRecords();
 	},
 	
+	/**
+	 *	Removes all record tabs (but not the add-record tab), fetches the records of this.account, adds tabs for each record and then
+	 *	loads the first or the given record.
+	 */
 	loadRecords: function(load_record) {
 		this.removeAllRecordTabs();
 		var self = this, 
@@ -34,19 +38,21 @@ $.Controller.extend('UI.Controllers.Record',
 			}
 			
 			// load the desired or first record
-			if (records.length > 0 && load_record) {
+			if (records.length > 0) {
+				UI.Controllers.MainController.unlockAppSelector();
 				var record_to_load = records[0];
-				for (var i = 0; i < records.length; i++) {
-					if (records[i].id == load_record) {
-						record_to_load = records[i];
-						break;
+				if (load_record) {
+					for (var i = 0; i < records.length; i++) {
+						if (records[i].id == load_record) {
+							record_to_load = records[i];
+							break;
+						}
 					}
 				}
-				
 				self.loadRecord(record_to_load);
 			}
-			else if (records.length < 1) {
-			//	$('body').controllers('main')[0].showNoRecordsHint();
+			else {
+				UI.Controllers.MainController.showNoRecordsHint();
 			}
 		},
 		function() {
@@ -109,7 +115,8 @@ $.Controller.extend('UI.Controllers.Record',
 	 * Add a record tab
 	 */
 	addTab: function(record, selected) {
-		// TODO: replace with a listener for changes to a List of Records on the Account when JMVC merges Observable into Model 
+		// TODO: replace with a listener for changes to a List of Records on the Account when JMVC merges Observable into Model
+		$('#loading_records_hint').remove();
 		// append tab to existing list
 		$('#record_tabs').append($.View("//ui/views/record/show_tab", {record:record, selected:selected, color:record ? record.bgcolor : 'rgb(250,250,250)'}));
 	},

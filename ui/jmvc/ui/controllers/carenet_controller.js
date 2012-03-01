@@ -353,6 +353,7 @@ $.Controller.extend('UI.Controllers.Carenet',
 				
 				// remove warning
 				if (account.in_no_carenet) {
+					account.in_no_carenet = false;
 					$('#known_accounts').find('.account').each(function(i, node) {
 						var acc = $(node).model();
 						if (acc && acc.id == account.id) {
@@ -475,7 +476,7 @@ $.Controller.extend('UI.Controllers.Carenet',
 			this.setupCarenetView(carenet_view);
 			
 			// jump to name edit mode if the carenet has the standard name (or no name)
-			if (!new_carenet.name || new_carenet.has_default_name) {
+			if (!new_carenet.name || 0 != new_carenet.has_default_name) {
 				carenet_view.find('a.carenet_name').click();
 			}
 			
@@ -498,7 +499,7 @@ $.Controller.extend('UI.Controllers.Carenet',
 	didNotCreateCarenet: function(carenet_view, callback, errXHR) {		// error callback for createCarenet
 		try {
 			if (errXHR.responseText.length > 0) {
-				alert('{% trans "There was an error creating your new carenet: " }' + errXHR.responseText);
+				alert('{% trans "There was an error creating your new carenet: " %}' + errXHR.responseText);
 			}
 			else {
 				throw('No response text');
@@ -507,6 +508,8 @@ $.Controller.extend('UI.Controllers.Carenet',
 		catch (exc) {
 			alert('{% trans "There was an error creating your new carenet, please try again" %}');
 		}
+		
+		carenet_view.find('button').removeAttr('disabled');
 		if (callback) {
 			callback(null, 'error', errXHR);
 		}
@@ -529,11 +532,11 @@ $.Controller.extend('UI.Controllers.Carenet',
 				carenet_view.removeClass('highlight');
 			}
 			else {
-				console.log('deleteCarenet: carenet_view has no model!');
+				steal.dev.log('deleteCarenet: carenet_view has no model!');
 			}
 		}
 		else {
-			console.log('deleteCarenet: carenet_view was null!');
+			steal.dev.log('deleteCarenet: carenet_view was null!');
 		}
 	},
 	didDeleteCarenet: function(carenet, carenet_view, data, textStatus, xhr) {
@@ -596,7 +599,7 @@ $.Controller.extend('UI.Controllers.Carenet',
 			}
 		}
 		catch (exc) {
-			console.log('didNotDeleteCarenet:', exc);
+			steal.dev.log('didNotDeleteCarenet:', exc);
 			alert('{% trans "There was an error deleting the carenet, please try again" %}');
 		}
 		
@@ -613,7 +616,7 @@ $.Controller.extend('UI.Controllers.Carenet',
 		
 		// rename existing carenet
 		if (carenet) {
-			carenet.rename(new_name, this.callback('didChangeCarenetName', form), this.callback('didNotChangeCarenetName', form));
+			carenet.rename(new_name, this.callback('didChangeCarenetName', form, carenet), this.callback('didNotChangeCarenetName', form, carenet));
 		}
 		
 		// "rename" new carenet by creating it
@@ -637,7 +640,7 @@ $.Controller.extend('UI.Controllers.Carenet',
 	didNotChangeCarenetName: function(name_form, carenet, xhr, textStatus, status) {
 		var msg = (xhr && xhr.responseText) ? xhr.responseText : status;
 		if (msg) {
-			alert("There was an error changing the name, please try again\n\n" + msg);
+			alert(msg);
 		}
 		name_form.find('button').removeAttr('disabled');
 	},

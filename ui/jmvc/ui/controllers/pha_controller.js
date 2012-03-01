@@ -3,21 +3,7 @@
  * 
 @tag controllers, home
  *
- * PHA settings controller. Can remove a pha here and later set preferences, view logs, etc
- *
- *
- *
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- * WARNING: carenet stuff broken and incomplete!!!
- *
+ * PHA settings controller.
  *
  * @author Pascal Pfiffner (pascal.pfiffner@childrens.harvard.edu)
  * @author Arjun Sanyal (arjun.sanyal@childrens.harvard.edu)
@@ -470,7 +456,12 @@ $.Controller.extend('UI.Controllers.PHA',
 	},
 	
 	enableApp: function(app, checkbox) {
-		this.record.enable_app(app.app_id, this.callback('didEnableApp', app, checkbox), this.callback('doNotEnableApp', app, checkbox));
+		if (confirm('{% trans "Are you sure you want to enable " %}' + app.name + '?')) {
+			this.record.enable_app(app.app_id, this.callback('didEnableApp', app, checkbox), this.callback('doNotEnableApp', app, checkbox));
+		}
+		else {
+			checkbox.prop('checked', false).removeAttr('disabled');
+		}
 	},
 	doNotEnableApp: function(app, checkbox, xhr, textStatus, error) {
 		//TODO: if we are coming from a successful ajax request, the xhr.status is not filled out accurately (always 200). Once this is fixed in the client, add in better handling

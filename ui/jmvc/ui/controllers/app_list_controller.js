@@ -38,7 +38,7 @@ $.Controller.extend('UI.Controllers.AppList',
 		// load
 		var ui_main = $('body').controllers("main")[0];
 		if (!ui_main) {
-			console.error("There is no main controller on body");
+			steal.dev.warn("There is no main controller on body");
 			return;
 		}
 		
@@ -186,9 +186,6 @@ $.Controller.extend('UI.Controllers.AppList',
 		if (this.account.activeRecord) {
 			var old_app = $('#' + selected_id);
 			if (old_app.is('*')) {
-				var type = old_app.attr("data-appType");
-				var controller = old_app.attr("data-controller");
-				console.log(old_app);
 				old_app.click();
 			}
 			else {

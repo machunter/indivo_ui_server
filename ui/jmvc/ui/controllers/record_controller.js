@@ -59,7 +59,7 @@ $.Controller.extend('UI.Controllers.Record',
 		var loading_same = (record == this.account.activeRecord);
 		var ui_main = $('body').controllers('main')[0];
 		if (!ui_main) {
-			console.error('There is no main controller on body');
+			steal.dev.warn('There is no main controller on body');
 			return;
 		}
 		this.account.attr("activeRecord", record);
@@ -130,7 +130,7 @@ $.Controller.extend('UI.Controllers.Record',
 	showRecordInfo: function() {
 		var record = this.account.activeRecord;
 		if (!record) {
-			console.error('showRecordInfo()', 'Can not show record info page, no activeRecord is set!');
+			steal.dev.warn('showRecordInfo()', 'Can not show record info page, no activeRecord is set!');
 			return;
 		}
 		
@@ -143,7 +143,7 @@ $.Controller.extend('UI.Controllers.Record',
 		// load template
 		var ui_main = $('body').controllers('main')[0];
 		if (!ui_main) {
-			console.error('There is no main controller attached to body');
+			steal.dev.warn('There is no main controller attached to body');
 			return;
 		}
 		
@@ -158,7 +158,7 @@ $.Controller.extend('UI.Controllers.Record',
 	showRecordForm: function() {
 		var ui_main = $('body').controllers('main')[0];
 		if (!ui_main) {
-			console.error('There is no main controller attached to body');
+			steal.dev.warn('There is no main controller attached to body');
 			return;
 		}
 		
@@ -194,7 +194,7 @@ $.Controller.extend('UI.Controllers.Record',
 		this.loadRecords(new_record_id);
 	},
 	didNotCreateNewRecord: function(form, errXhr) {
-		console.log('Error handling not really implemented', errXhr);
+		steal.dev.warn('Error handling not really implemented', errXhr);
 		form.find('.error_area').first().text('Error');
 		form.find('.loader').first().hide();
 		$('#create_record_submit').removeAttr('disabled');

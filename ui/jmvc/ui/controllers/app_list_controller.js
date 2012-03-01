@@ -21,6 +21,8 @@ $.Controller.extend('UI.Controllers.AppList',
 		this.enabledApps = this.options.enabledApps;
 		this.selector = this.options.selector;
 		this.animateTabSelection = this.options.animateTabSelection;
+		// start as locked
+		this.lock();
 	},
 	
 	/*

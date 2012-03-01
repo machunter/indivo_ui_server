@@ -38,21 +38,16 @@ $.Controller.extend('UI.Controllers.Record',
 			}
 			
 			// load the desired or first record
-			if (records.length > 0) {
-				UI.Controllers.MainController.unlockAppSelector();
+			if (load_record && records.length > 0) {
 				var record_to_load = records[0];
-				if (load_record) {
-					for (var i = 0; i < records.length; i++) {
-						if (records[i].id == load_record) {
-							record_to_load = records[i];
-							break;
-						}
+				
+				for (var i = 0; i < records.length; i++) {
+					if (records[i].id == load_record) {
+						record_to_load = records[i];
+						break;
 					}
 				}
 				self.loadRecord(record_to_load);
-			}
-			else {
-				UI.Controllers.MainController.showNoRecordsHint();
 			}
 		},
 		function() {

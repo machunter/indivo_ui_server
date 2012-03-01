@@ -233,7 +233,7 @@ $.Controller.extend('UI.Controllers.MainController',
 			record_controller.loadRecord(null);
 		}
 		else {
-			console.warn('RecordController was not found on body', $('body').controllers());
+			steal.dev.warn('RecordController was not found on body', $('body').controllers());
 		}
 		
 		// load correct controller
@@ -242,7 +242,7 @@ $.Controller.extend('UI.Controllers.MainController',
 			$('#app_content')['ui_' + el.attr('id')]({account:this.account}).show();
 		}
 		else {
-			console.error("Error: There is no controller for " + el.attr('id'));
+			steal.dev.warn("Error: There is no controller for " + el.attr('id'));
 		}
 		
 		// update tab and set background color

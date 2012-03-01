@@ -30,10 +30,13 @@ $.Controller.extend('UI.Controllers.Message',
 			UI.Controllers.MainController.update_inbox_tab(messages); 
 			self.messages = messages;
 			// manually pass messages to view
-			self.element.html($.View('//ui/views/message/show.ejs', {
-				'messages': messages,
-				'account': self.account 
-			}))
+			self.account.get_record_labels(function(labels) {
+				self.element.html($.View('//ui/views/message/show.ejs', {
+					'messages': messages,
+					'account': self.account,
+					'labels': labels  
+				}));
+			});
 		});
 	},
 	

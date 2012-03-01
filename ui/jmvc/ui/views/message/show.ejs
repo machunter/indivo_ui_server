@@ -1,6 +1,13 @@
 {% load i18n %}
 <h2>{% trans "Inbox" %}</h2>
-
+<p>Displaying messages for: 
+	<% if (labels.length <=2) { %>
+		<%= labels.join(' and ') %>
+	<% } else { %>
+		<% var lastLabel = labels.pop() %> 
+		<%= labels.join(', ') %> and <%= lastLabel %>
+	<% } %>
+</p>
 <% if (messages.length == 0) { %>
 
   <em>{% trans "no messages" %}</em>

@@ -90,7 +90,7 @@ def index(request):
                 return utils.render_template('ui/index', { 'ACCOUNT_ID': account_id,
                                                              'FULLNAME': fullname,
                                                              'SETTINGS': settings })
-           	
+            
             # 404 and 403 errors here mostly happen on expired tokens or deleted accounts. Redirect to login to clear the tokens
             if 403 == status or 404 == status:
                 return HttpResponseRedirect(reverse(login))
@@ -108,12 +108,8 @@ def login(request, status):
     FIXME: make note that account will be disabled after x failed logins!!!
     """
     
-    # carry over a callback_url and login_return_url should we still have one (calling /logout will clear these and redirect to callback_url)
-#    callback_url = request.session.get('callback_url')
-#    return_url = request.session.get('login_return_url');
+    # flush session
     request.session.flush()
-#    if callback_url:
-#        request.session['callback_url'] = callback_url
     
     # generate a new session and get return_url
     return_url = None
@@ -121,10 +117,6 @@ def login(request, status):
         return_url = request.POST['return_url']
     elif request.GET.has_key('return_url'):
         return_url = request.GET['return_url']
-    
-    # save return_url
-#    if return_url:
-#        request.session['login_return_url'] = return_url
     
     # set up the template
     FORM_USERNAME = 'username'
@@ -159,6 +151,8 @@ def login(request, status):
         res = tokens_get_from_server(request, username, password)
     except IOError as e:
         if 403 == e.errno:
+            
+            # TODO: Check whether the account was disabled or reset
             params['ERROR'] = ErrorStr('Incorrect credentials')         # a 403 could also mean logging in to a disabled account!
         elif 400 == e.errno:
             params['ERROR'] = ErrorStr('Name or password missing')      # checked before; highly unlikely to ever arrive here
@@ -328,18 +322,21 @@ def account_init(request, account_id, primary_secret):
     if 200 != status:
         return utils.render_template('ui/error', {'error_status': status, 'error_message': ErrorStr(ret.response.get('response_data', 'Server Error'))})
     
+    # determine account state
     account_xml = ret.response.get('response_data', '<root/>')
     account = utils.parse_account_xml(account_xml)
     account_state = account.get('state')
-    has_primary_secret = (len(primary_secret) > 0)      # TODO: Get this information from the server (API missing as of now)
+    account_is_uninitialized = ('uninitialized' == account_state)		# TODO: Rewrite server to not set uninitialized upon password reset
+    has_auth_system = (len(account.get('auth_systems', [])) > 0)		# TODO: Try to avoid upon account-init rewrite
+    has_primary_secret = (len(primary_secret) > 0)      				# TODO: Get this information from the server (API missing as of now)
     secondary_secret = ''
     has_secondary_secret = (None != account.get('secret') and len(account.get('secret')) > 0)
     can_autocreate_record = True if 'uninitialized' == account_state else False     # TODO: Better: check whether the account has no records
     
     # if the account is already active, show login IF at least one auth-system is attached
-    if 'uninitialized' != account_state:
+    if not account_is_uninitialized:
         if 'active' == account_state:
-            if len(account['auth_systems']) > 0:
+            if has_auth_system:
                 return utils.render_template(LOGIN_PAGE, {'MESSAGE': _('Your account is now active, you may log in below'), 'SETTINGS': settings})
             else:
                 move_to_setup = True
@@ -372,12 +369,20 @@ def account_init(request, account_id, primary_secret):
                                            data = data)
         status = ret.response.get('response_status', 0)
         
-        # on success also create the first record if we have a full_name and is enabled in settings
+        # on success also create the first record if we have a full_name, autocreation is enabled in settings and we don't yet have a record
         if 200 == status:
             if can_autocreate_record and settings.REGISTRATION['autocreate_record'] and account.has_key('fullName') and len(account['fullName']) > 0:
-                res = _record_create(account_id, {'fullName': account['fullName'], 'email': account_id})
-                if 200 != res.status_code:
-                    utils.log("account_init(): Error creating a record after initializing the account, failing silently. The error was: %s" % res.content)
+                
+                # check whether we already have records
+                api = get_api()
+                res = api.read_records(account_id = account_id)
+                records = res.response.get('prd', {}).get('Record')
+                
+                # no records, create one
+                if len(records) < 1:
+                    res = _record_create(account_id, {'fullName': account['fullName'], 'email': account_id})
+                    if 200 != res.status_code:
+                        utils.log("account_init(): Error creating a record after initializing the account, failing silently. The error was: %s" % res.content)
             move_to_setup = True
         elif 404 == status:
             return utils.render_template(LOGIN_PAGE, {'ERROR': ErrorStr('Unknown account')})

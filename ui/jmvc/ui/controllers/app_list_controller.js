@@ -275,16 +275,16 @@ $.Controller.extend('UI.Controllers.AppList',
 	showAppSelectionInterface: function() {
 		if (this.element.is(':hidden')) {
 			this.element.show();
-			$('#tabs').css('margin-left', '17%');
-			$('#app_container').css('margin-left', '17%');
+			$('#tabs').css('left', '17%');
+			$('#app_container').css('left', '17%');
 		}
 	},
 	
 	hideAppSelectionInterface: function() {
 		if (this.element.is(':visible')) {
 			this.element.hide();
-			$('#tabs').css('margin-left', 0);
-			$('#app_container').css('margin-left', 0);
+			$('#tabs').css('left', '15px');
+			$('#app_container').css('left', '15px');
 		}
 	}
 });

@@ -911,9 +911,9 @@ def authorize(request):
     If we arrive here via GET:
         If user has no valid token:
             Redirect to login with return_url set to the request URL
-        For not yet approved apps:
-            Return JSON with some info data, ui_server will then have the user click "OK"
-        For already approved apps:
+        For not yet approved apps with a request token present:
+            Return HTML have the user click "OK" if he approves the app
+        For already approved apps and a request token:
             Silently approve and proceed
     
     If we arrive here via POST:
@@ -953,7 +953,7 @@ def authorize(request):
     callback_url = request.REQUEST.get('oauth_callback')
     
     # process GETs (initially adding an app and a normal call for this app)
-    if request.method == HTTP_METHOD_GET and request.GET.has_key('oauth_token'):
+    if request.method == HTTP_METHOD_GET and request_token is not None:
         
         # claim request token and check return value
         res = api.claim_request_token(request_token=request_token)
@@ -963,7 +963,7 @@ def authorize(request):
         response_status = res.response.get('response_status', 500)
         if response_status != 200:
             response_message = res.response.get('response_data', 'bad response to claim_request_token')
-            return utils.render_template('ui/error', {'error_status': response_status, 'error_message': ErrorStr(response_message)})
+            return utils.render_template('ui/error', {'error_status': response_status, 'error_message': ErrorStr('Failed to claim request token')})
         
         # get info on the request token
         app_info = api.get_request_token_info(request_token=request_token).response['response_data']

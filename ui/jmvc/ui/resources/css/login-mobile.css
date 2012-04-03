@@ -58,6 +58,7 @@ label { margin-left: 0.5em; }
 	background-color: rgb(254,242,235); background-color: rgba(255,50,0,0.05);
 }
 .login_error .moreinfo { margin-top: 1em; font-size: 14px; }
+#error { margin: 2em 1em 0; font-size: 0.9em; }
 .main_action_button { margin-top: 1em; text-align: center; }
 #submit { min-width: 59%; }
 

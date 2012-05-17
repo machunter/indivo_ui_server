@@ -76,18 +76,18 @@
 				
 				<!-- the app selector -->
 				<div id="app_selector">
-					<ul id="ui_app_tabs" style="display: none;"></ul>
+					<ul id="active_app_tabs" style="display: none;"></ul>
 					<ul id="background_app_tabs" style="display: none"></ul>
 					
 					<ul id="record_owned_options">
 						{% if not SETTINGS.HIDE_SHARING %}
 						<li id="carenet" data-controller="carenet" data-appType="internal">
-							<img class="app_tab_img_small" src="/jmvc/ui/resources/images/icons_24/groupevent.png" alt="" />{% trans "Sharing" %}
+							<img class="app_tab_img" src="/jmvc/ui/resources/images/icons_24/groupevent.png" alt="" />{% trans "Sharing" %}
 						</li>
 						{% endif %}
 						{% if not SETTINGS.HIDE_APP_SETTINGS %}
 						<li id="pha" data-controller="pha" data-appType="internal">
-							<img class="app_tab_img_small" src="/jmvc/ui/resources/images/icons_24/settings.png" alt="" />{% trans "App Settings" %}
+							<img class="app_tab_img" src="/jmvc/ui/resources/images/icons_24/settings.png" alt="" />{% trans "App Settings" %}
 						</li>
 						{% endif %}
 					</ul>

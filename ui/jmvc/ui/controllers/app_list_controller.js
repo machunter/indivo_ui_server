@@ -21,6 +21,8 @@ $.Controller.extend('UI.Controllers.AppList',
 		this.enabledApps = this.options.enabledApps;
 		this.selector = this.options.selector;
 		this.animateTabSelection = this.options.animateTabSelection;
+		this.appMap = {};
+		this.lastAppId = null;
 		// start as locked
 		this.lock();
 	},
@@ -29,36 +31,133 @@ $.Controller.extend('UI.Controllers.AppList',
 	 * Display an app when its selector is clicked.  
 	 */
 	"{selector} click": function(el, ev) {
-		var type = el.attr("data-appType"),
-			controller = el.attr("data-controller");
+		var appModel = el.model();
+		var appId = el.attr("id");
+		var controller = el.attr("data-controller");
 		
 		// animate tab to new selection TODO: do we want to revert on failure?
 		this.selectTab(el);
+		this.indicateNoAppLoading();
 		
-		// load
-		var ui_main = $('body').controllers("main")[0];
-		if (!ui_main) {
-			steal.dev.warn("There is no main controller on body");
-			return;
+		// Clean up the previous running app
+		$("#app_content").children().hide();
+		if (this.lastAppId) {
+			// if the click was on the previously running app, then refresh that app
+			if (appId === this.lastAppId && this.appMap[appId]) {
+				
+				// if the previously selected tab was internal, clean up its div
+				if (!appModel) {
+					this.appMap[appId].remove();
+				}
+				
+				// otherwise, let the app_manager handle it
+				else {
+					APP_MANAGER.destroy_app_instance(appModel);
+				}
+				
+				// and remove it from our app map
+				delete this.appMap[appId];
+			}
+			
+			// Otherwise, Background the previous running app
+			else {
+				var lastModel = $("#" + this.lastAppId).model();
+				if (lastModel) {
+					APP_MANAGER.notify_app(lastModel, 'background', {});
+				}
+			}
 		}
 		
-		switch (type) {
-			case "internal":
-				ui_main.cleanAndShowAppDiv();
-				$("#app_content")["ui_" + controller]({account:this.account}).show();
-				break;
-			case "external": 
-				var url = el.attr("data-url");
-				ui_main.loadURLInAppIFrame(url);
-				break;
-			case "background":
-				alert("background not supported yet");
-				break;
-			default:
-				alert("app type of " + type + " not supported")
-				break;
+		// If the newly selected app is already running and has an associated model,
+		// foreground it and show it		
+		var appEl = this.appMap[appId];
+		if (appEl && appModel) {
+			APP_MANAGER.notify_app(appModel, 'foreground', {});
+			appEl.show()
+		}
+		
+		// If the newly selected app is already running and internal, just show it.
+		else if (appEl) {
+			appEl.show()
+		}
+		
+		// If we are starting an app for the first time, and it has an associated model, set it up with the app manager
+		else if (appModel) {
+			var self = this;
+			
+			// show a loading image while we wait
+			this.indicateAppLoading(el, true);
+			
+			var activeRecord = this.account.attr("activeRecord");
+			var manifest = appModel.getManifest({
+				'record_id': activeRecord.carenet_id ? '' : activeRecord.id,
+				'carenet_id': activeRecord.carenet_id || ''
+			});
+			var context = this.getContext();
+			var ret = APP_MANAGER.launch_app(manifest, context, {})
+			ret.done(function(app_instance) {
+				self.appMap[appId] = $(app_instance.iframe).load(function() {
+					self.indicateAppLoading(el, false);
+				});
+				appModel.attr("MANAGER_uuid", app_instance.uuid);
+			});
+		}
+		
+		// If we are starting an app for the first time, and it is internal, just load the html under the #app_content div and show it.
+		else {
+			// show a loading image while we wait
+			this.indicateAppLoading(el, true);
+			
+			var newHtml = $('<div></div>')["ui_" + controller]({
+				account: this.account
+			});
+			this.appMap[appId] = newHtml.appendTo("#app_content").show();
+			
+			this.indicateAppLoading(el, false);
+		}
+		
+		// set the newly active app as the latest active one
+		this.lastAppId = appId;
+	},
+	
+	/**
+	 *	Show the spinner while an app is loading
+	 */
+	indicateAppLoading: function(app_el, is_loading) {
+		var icon = app_el ? app_el.find('.app_tab_img') : null;
+		if (icon) {
+			
+			// turn on
+			if (is_loading) {
+				icon.attr('data-iconsrc', icon.attr('src'));
+				icon.attr('src', 'jmvc/ui/resources/images/spinner-24.gif');
+			}
+			
+			// turn off
+			else {
+				var icon_src = icon.attr('data-iconsrc');
+				if (icon_src) {
+					icon.attr('src', icon_src);
+				}
+			}
+		}
+		else {
+			steal.dev.log('App icon element not found');
 		}
 	},
+	
+	/**
+	 *	Resets any loading spinner; useful when an app fails to load an the user clicks a different app.
+	 */
+	indicateNoAppLoading: function() {
+		$('#app_selector').find('.app_tab_img').each(function(idx, elem) {
+			var icon_src = $(elem).attr('data-iconsrc');
+			if (icon_src) {
+				$(elem).attr('src', icon_src);
+			}
+		});
+	},
+	
 	
 	/**
 	 * Listen for new apps being added to enabledApps and renders a new selector
@@ -73,24 +172,40 @@ $.Controller.extend('UI.Controllers.AppList',
 	 * NOTE: Healthfeed, Inbox, "Get More Apps", and "Sharing" are not
 	 * added using this method since they are not true apps.
 	 *
-	 * App with no ui go into a spot below the normal apps and above "Sharing" and "App Settings"
+	 * app with no ui go into a spot below the normal apps and above "sharing" and "get more apps"
+	 *
+	 * @codestart html
+	 * <div id="background_apps_list" style="text-align: center; margin: 0px 0;">
+	 *   <span style="color: #aaa; font-size: 0.85em">&bull;</span>
+	 * </div>
+	 * <div>this is a bg app</div>
+	 * <div>this is another bg app</div>
+	 * @codeend
 	 */
 	"{enabledApps} add": function(list, ev, newApps) {
 		var activeRecord = this.account.attr("activeRecord");
 		if (activeRecord) {
 			$.each(newApps, function(i, app) {
+				
 				// app with a UI
-				if (app.ui) {
+				if (app.has_ui) {
 					var startURL = app.getStartURL({
 						'record_id': activeRecord.carenet_id ? '' : activeRecord.id,
 						'carenet_id': activeRecord.carenet_id || ''
 					});
-					$('#ui_app_tabs').append($.View("//ui/views/pha/app_tab", {isBackgroundApp:false, app:app, startURL:startURL}));
+					$('#active_app_tabs').append($.View("//ui/views/pha/app_tab", {
+						isBackgroundApp: false,
+						app: app,
+						startURL: startURL
+					}));
 				}
 				
 				// background app
 				else {
-					$('#background_app_tabs').append($.View("//ui/views/pha/app_tab", {isBackgroundApp:true, app:app}));
+					$('#background_app_tabs').append($.View("//ui/views/pha/app_tab", {
+						isBackgroundApp: true,
+						app: app
+					}));
 				}
 			});
 		}
@@ -110,7 +225,7 @@ $.Controller.extend('UI.Controllers.AppList',
 	 *	Shows and hides the app selector areas according to their content
 	 */
 	updateAppSelectorVisibility: function() {
-		var ui_app_sel = $('#ui_app_tabs');
+		var ui_app_sel = $('#active_app_tabs');
 		if (ui_app_sel.children().length > 0) {
 			ui_app_sel.show();
 		}
@@ -137,6 +252,16 @@ $.Controller.extend('UI.Controllers.AppList',
 		if (attr === "activeRecord") {
 			if (newVal) {
 				var record = newVal;
+
+				// stop managing the old record's apps
+				APP_MANAGER.record_context_changed();
+				$.each(this.appMap, function(app_id, app_el) {
+					if (!app_el.model()) {
+						app_el.remove();
+					}
+				});
+				this.appMap = {};
+
 				// is this a carenet or a record? depending on which, init the appropriate apps
 				if (record.carenet_id) {
 					UI.Models.PHA.get_by_carenet(record.carenet_id, null, this.callback('set_enabled_apps'));
@@ -159,11 +284,12 @@ $.Controller.extend('UI.Controllers.AppList',
 	 */
 	set_enabled_apps: function(apps) {
 		var enabledList = this.enabledApps,
-			selected_id = $('#app_selector .selected').attr('id'), // remember selected app before clearing...
-			removeList = enabledList.slice(0, enabledList.length); 
-			
-		// clear out exising apps	
-		$.each(removeList, function(i, app) { 
+			selected_id = $('#app_selector .selected').attr('id'),
+			// remember selected app before clearing...
+			removeList = enabledList.slice(0, enabledList.length);
+
+		// clear out exising apps
+		$.each(removeList, function(i, app) {
 			enabledList.remove(app.id);
 		});
 		
@@ -193,7 +319,16 @@ $.Controller.extend('UI.Controllers.AppList',
 			}
 		}
 	},
-	
+
+	/*
+	 * Clear out any previous Controllers that have been attached to given element
+	 * @param {Object} el element to remove Controllers from
+	 */
+	clearControllers: function(el) {
+		$.each($(el).controllers(), function(i, val) {
+			val.destroy();
+		});
+	},
 
 	/**
 	 * Simple App tab functionality
@@ -242,6 +377,20 @@ $.Controller.extend('UI.Controllers.AppList',
 		if (el) {
 			el.addClass('selected').css('background-color', bgcolor);
 		}
+	},
+
+	getContext: function() {
+		var activeRecord = this.account.attr("activeRecord");
+		var context = {}
+		context.user = {
+			id: this.account.id,
+			full_name: this.account.fullName
+		};
+		context.record = {
+			id: activeRecord.carenet_id || activeRecord.id,
+			full_name: activeRecord.label
+		};
+		return context;
 	},
 	
 	

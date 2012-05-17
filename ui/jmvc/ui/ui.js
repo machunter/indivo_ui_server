@@ -13,12 +13,18 @@ steal(
 	"./models/indivoBase"
 )
 .then(
+        // Resource Dependencies
+        "./resources/js/jschannel.js",
+	"./resources/js/smart-api-container.js"
+)
+.then(
 	// Resources
 	"./resources/js/bootstrap-alerts.js",
 	"./resources/js/underscore-min.js",
 	"./resources/js/jquery-ui-1.8.16.custom.min.js",
 	"./resources/js/date.js",
 	"./resources/js/utils.js",
+	"./resources/js/app-manager.js",
 	"./resources/css/bootstrap-custom.css",
 	// Models
 	'./models/account',
@@ -57,6 +63,9 @@ steal(
 			// retrieve the logged in account
 			UI.Models.Account.findOne(ACCOUNT_ID, function(account) {
 				if (account && account.id) {
+					// update title and header with account fullName
+					$('#header_fullname').text(' for ' + account.fullName);
+					$('title').text($('title').text() + ' for ' + account.fullName);
 					// init controllers once Account is loaded
 					$("#app_selector").ui_app_list({account:account, enabledApps:UI.ENABLED_APPS});
 					$("body").ui_record({account:account, alertQueue:UI.ALERT_QUEUE});

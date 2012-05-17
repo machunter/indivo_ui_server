@@ -419,6 +419,7 @@ blockquote.content { margin: 1em 0; }
 }
 #app_selector li {
 	position: relative;
+	height: 32px; line-height: 32px;
 	margin: 5px 0; padding: 4px 4px 4px 10px;
 	list-style: none; cursor: pointer;
 	border: 1px solid transparent;
@@ -439,10 +440,9 @@ blockquote.content { margin: 1em 0; }
 	background-color: rgb(254,252,247); background-color: rgba(254,252,247,0.8);
 }
 
-.app_tab_img { margin: 0 10px -7px 0; }
-.app_tab_img_small { margin: 0 10px -7px 0; padding: 2px 4px; }
+.app_tab_img { width: 24px; margin: 0 12px 0 2px; vertical-align: middle; }
 
-#ui_app_tabs {
+#active_app_tabs {
 	margin-bottom: 1em;
 }
 #background_app_tabs {
@@ -451,6 +451,11 @@ blockquote.content { margin: 1em 0; }
 #record_owned_options {
 }
 
+.app_content_iframe {
+        width: 100%; 
+	min-height: 600px; 
+	min-width: 768px; /* not including padding, borders or margin. 768 + (15 * 2 (padding)) + (1 * 2) (border) = 800px total width*/
+}
 
 /*** record tabs ***/
 #loading_records_hint {
@@ -702,7 +707,10 @@ input.account_name { width: 95%; }
 
 
 /*** carenets ***/
-#carenets {
+#sharing_carenets {
+	position: relative;
+}
+#app_settings_carenets {
 	position: relative;
 }
 .carenet {

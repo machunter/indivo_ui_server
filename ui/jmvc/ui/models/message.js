@@ -63,6 +63,5 @@ UI.Models.IndivoBase.extend('UI.Models.Message',
 			success: success,
 			error: error
 		});
-	},
-	
+	}
 })

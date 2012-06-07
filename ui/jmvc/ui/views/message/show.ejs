@@ -24,6 +24,7 @@
       <th class="attachment">
       	<img class="icon paperclip" src="/jmvc/ui/resources/images/paperclip.png" alt="has attachment" title="has attachment">
       </th>
+      <th class="archive"></th>
     </tr>
   </thead>
   <tbody>
@@ -41,6 +42,9 @@
         	<% if (messages[i].attachments && messages[i].attachments.length > 0) { %>
         		<img class="icon paperclip" src="/jmvc/ui/resources/images/paperclip.png" alt="attachment" title="attachment">
         	<% } %>
+        </td>
+        <td>
+        	<img class="icon archive" src="/jmvc/ui/resources/images/delete.png" alt="delete" title="delete message">
         </td>
       </tr>
       <% } %>

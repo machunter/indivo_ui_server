@@ -239,7 +239,7 @@ $.Controller.extend('UI.Controllers.MainController',
 		// load correct controller
 		this.cleanAndShowAppDiv();
 		if ($('#app_content')['ui_' + el.attr('id')]) {
-			$('#app_content')['ui_' + el.attr('id')]({account:this.account}).show();
+			$('#app_content')['ui_' + el.attr('id')]({account:this.account, alertQueue:this.alertQueue}).show();
 		}
 		else {
 			steal.dev.warn("Error: There is no controller for " + el.attr('id'));

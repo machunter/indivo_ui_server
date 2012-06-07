@@ -78,9 +78,9 @@ $.Controller.extend('UI.Controllers.Message',
 				tableElement = messageElement.closest('table');
 				messageElement.fadeOut("slow", function() {
 					messageElement.remove()
+					tableElement.find('tr').filter(":even").addClass("even").removeClass("odd");
+					tableElement.find('tr').filter(":odd").addClass("odd").removeClass("even");
 				});
-				tableElement.find('tr').filter(":even").addClass("even").removeClass("odd");
-				tableElement.find('tr').filter(":odd").addClass("odd").removeClass("even");
 			},
 			// error 
 			function() {
